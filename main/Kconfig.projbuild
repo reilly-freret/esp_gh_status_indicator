@@ -1,0 +1,38 @@
+menu "GitHub Status Indicator Configuration"
+
+    config GITHUB_USERNAME
+        string "GitHub Username"
+        default "octocat"
+        help
+            GitHub username to check status for
+
+    config GITHUB_REPO
+        string "GitHub Repository"
+        default "octocat/Hello-World"
+        help
+            GitHub repository to check status for (format: owner/repo)
+
+    config GITHUB_AUTH_TOKEN
+        string "Github personal auth token"
+        default "CHANGE_ME"
+
+    config STATUS_CHECK_INTERVAL
+        int "Status Check Interval (seconds)"
+        range 10 3600
+        default 60
+        help
+            How often to check GitHub status in seconds
+
+    config WIFI_SSID
+        string "WiFi SSID"
+        default "myssid"
+        help
+            WiFi network name
+
+    config WIFI_PASSWORD
+        string "WiFi Password"
+        default "mypassword"
+        help
+            WiFi password
+
+endmenu
