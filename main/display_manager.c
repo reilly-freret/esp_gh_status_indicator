@@ -8,12 +8,84 @@
 #include "esp_lcd_panel_vendor.h"
 #include "esp_log.h"
 #include "driver/gpio.h"
+#include "font/lv_font.h"
 #include "misc/lv_color.h"
 
 static const char *TAG = "display_manager";
 static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
 static lv_disp_t * disp_handle = NULL;
+
+const lv_font_t *get_font(enum text_size size) {
+    switch (size) {
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_8
+        case TEXT_SIZE_8:
+            return &lv_font_montserrat_8;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_10
+        case TEXT_SIZE_10:
+            return &lv_font_montserrat_10;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_12
+        case TEXT_SIZE_12:
+            return &lv_font_montserrat_12;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_14
+        case TEXT_SIZE_14:
+            return &lv_font_montserrat_14;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_16
+        case TEXT_SIZE_16:
+            return &lv_font_montserrat_16;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_18
+        case TEXT_SIZE_18:
+            return &lv_font_montserrat_18;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_20
+        case TEXT_SIZE_20:
+            return &lv_font_montserrat_20;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_22
+        case TEXT_SIZE_22:
+            return &lv_font_montserrat_22;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_24
+        case TEXT_SIZE_24:
+            return &lv_font_montserrat_24;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_26
+        case TEXT_SIZE_26:
+            return &lv_font_montserrat_26;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_28
+        case TEXT_SIZE_28:
+            return &lv_font_montserrat_28;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_30
+        case TEXT_SIZE_30:
+            return &lv_font_montserrat_30;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_32
+        case TEXT_SIZE_32:
+            return &lv_font_montserrat_32;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_34
+        case TEXT_SIZE_34:
+            return &lv_font_montserrat_34;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_36
+        case TEXT_SIZE_36:
+            return &lv_font_montserrat_36;
+        #endif
+        #ifdef CONFIG_LV_FONT_MONTSERRAT_38
+        case TEXT_SIZE_38:
+            return &lv_font_montserrat_38;
+        #endif
+        default:
+            return lv_font_get_default();
+    }
+}
 
 esp_err_t display_manager_set_bg_color(uint8_t r, uint8_t g, uint8_t b) {
     if (lvgl_port_lock(0)) {
@@ -49,6 +121,57 @@ esp_err_t display_manager_write_text(const char *text) {
         
         lv_obj_t *label = lv_label_create(scr);
         lv_label_set_text(label, text);
+        
+        // Set text color to white
+        lv_obj_set_style_text_color(label, lv_color_white(), 0);
+        
+        lvgl_port_unlock();
+        return ESP_OK;
+    }
+    return ESP_FAIL;
+}
+
+esp_err_t display_manager_write_text_color(const char *text, int16_t r, int16_t g, int16_t b) {
+    if (lvgl_port_lock(0)) {
+        lv_obj_t *scr = lv_scr_act();
+        
+        // Set up flex layout if not already done
+        lv_obj_set_layout(scr, LV_LAYOUT_FLEX);
+        lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+        
+        lv_obj_t *label = lv_label_create(scr);
+        lv_label_set_text(label, text);
+        
+        // Set text color using provided RGB values
+        lv_color_t text_color = lv_color_make(r, g, b);
+        lv_obj_set_style_text_color(label, text_color, 0);
+        
+        lvgl_port_unlock();
+        return ESP_OK;
+    }
+    return ESP_FAIL;
+}
+
+esp_err_t display_manager_write_text_custom(const char *text, text_config_t config) {
+    if (lvgl_port_lock(0)) {
+        lv_obj_t *scr = lv_scr_act();
+        
+        // Set up flex layout if not already done
+        lv_obj_set_layout(scr, LV_LAYOUT_FLEX);
+        lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+        
+        lv_obj_t *label = lv_label_create(scr);
+        lv_label_set_text(label, text);
+        
+        // Set text color using provided RGB values
+        lv_color_t text_color = lv_color_make(config.color.r, config.color.g, config.color.b);
+        lv_obj_set_style_text_color(label, text_color, 0);
+        
+        // Set text size using the get_font function
+        const lv_font_t *font = get_font(config.size);
+        lv_obj_set_style_text_font(label, font, 0);
         
         lvgl_port_unlock();
         return ESP_OK;
