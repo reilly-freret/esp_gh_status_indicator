@@ -1,4 +1,5 @@
 #pragma once
+#include "sdkconfig.h"
 
 #define LCD_HOST (SPI2_HOST)
 #define BOARD_POWERON        (gpio_num_t)(14)
@@ -24,8 +25,8 @@
 #define LCD_MIRROR_Y  (false)
 
 #if CONFIG_MIKES_WAY
-#define X_OFFSET (0)
-#define Y_OFFSET (0)
+#define X_OFFSET (53)
+#define Y_OFFSET (40)
 #else 
 #define X_OFFSET (52)
 #define Y_OFFSET (40)
