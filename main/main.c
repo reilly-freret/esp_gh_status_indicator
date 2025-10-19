@@ -7,6 +7,7 @@
 #include "portmacro.h"
 #include "sdkconfig.h"
 #include "wifi_manager.h"
+#include "utils.h"
 
 static const char *TAG = "github_status";
 
@@ -71,6 +72,17 @@ void app_main(void) {
   display_manager_write_text_color("  wifi connected", 0, 0, 0);
   vTaskDelay(pdMS_TO_TICKS(500));
 
+  // Initialize utils module (SNTP)
+  display_manager_write_text_color("init time sync...", 0, 0, 0);
+  esp_err_t time_err = utils_init();
+  if (time_err != ESP_OK) {
+    display_manager_set_bg_color(255, 0, 0);
+    display_manager_write_text_color("  time sync failed", 0, 0, 0);
+    vTaskDelay(portMAX_DELAY);
+  }
+  display_manager_write_text_color("  time synced", 0, 0, 0);
+  vTaskDelay(pdMS_TO_TICKS(500));
+
   display_manager_write_text_color("init complete", 0, 0, 0);
   vTaskDelay(pdMS_TO_TICKS(500));
 
@@ -92,6 +104,12 @@ void app_main(void) {
     #define X(env) write_status_to_display(#env, env##_status);
     ENVIRONMENTS
     #undef X
+
+    char time_str[9];
+    get_human_real_time(time_str);
+    char last_checked_str[32];
+    snprintf(last_checked_str, sizeof(last_checked_str), "last checked: %s", time_str);
+    display_manager_write_text_bottom(last_checked_str);
 
     vTaskDelay(pdMS_TO_TICKS(CONFIG_STATUS_CHECK_INTERVAL * 1000));
   }

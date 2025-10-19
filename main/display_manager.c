@@ -11,6 +11,7 @@
 #include "driver/gpio.h"
 #include "font/lv_font.h"
 #include "misc/lv_color.h"
+#include "sdkconfig.h"
 
 static const char *TAG = "display_manager";
 static esp_lcd_panel_io_handle_t io_handle = NULL;
@@ -183,10 +184,10 @@ esp_err_t display_manager_write_text_bottom(const char *text) {
         // Create a container for the bottom text that bypasses flex layout
         lv_obj_t *bottom_container = lv_obj_create(scr);
         lv_obj_remove_style_all(bottom_container);
-        lv_obj_set_size(bottom_container, screen_width, 30); // Fixed height for bottom text
+        lv_obj_set_size(bottom_container, screen_width, CONFIG_BOTTOM_TEXT_HEIGHT); // Fixed height for bottom text
         
         // Position container at the very bottom using absolute coordinates
-        lv_obj_set_pos(bottom_container, 0, screen_height - 30);
+        lv_obj_set_pos(bottom_container, 0, screen_height - CONFIG_BOTTOM_TEXT_HEIGHT);
         
         // Create a label inside the container
         lv_obj_t *label = lv_label_create(bottom_container);
