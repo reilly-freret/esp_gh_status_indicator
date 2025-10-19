@@ -22,3 +22,11 @@
 #define LCD_SWAP_XY   (false)
 #define LCD_MIRROR_X  (false)
 #define LCD_MIRROR_Y  (false)
+
+#if CONFIG_MIKES_WAY
+#define X_OFFSET (0)
+#define Y_OFFSET (0)
+#else 
+#define X_OFFSET (52)
+#define Y_OFFSET (40)
+#endif

@@ -66,6 +66,7 @@ esp_err_t display_manager_init(void);
 esp_err_t display_manager_test(void);
 esp_err_t display_manager_write_text(const char *text);
 esp_err_t display_manager_write_text_color(const char *text, int16_t r, int16_t g, int16_t b);
+esp_err_t display_manager_write_text_bottom(const char *text);
 esp_err_t display_manager_write_text_custom(const char *text, text_config_t config);
 esp_err_t display_manager_set_bg_color(uint8_t r, uint8_t g, uint8_t b);
 esp_err_t display_manager_clear(void);

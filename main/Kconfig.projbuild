@@ -34,5 +34,11 @@ menu "GitHub Status Indicator Configuration"
         default "mypassword"
         help
             WiFi password
+    
+    config MIKES_WAY
+        bool "Mike's way"
+        default false
+        help
+            when true, applies 180-deg rotation and offset
 
 endmenu

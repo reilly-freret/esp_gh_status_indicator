@@ -4,6 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "gh_status_manager.h"
+#include "portmacro.h"
 #include "sdkconfig.h"
 #include "wifi_manager.h"
 
@@ -53,25 +54,30 @@ void app_main(void) {
   ESP_LOGI(TAG, "  WiFi SSID: %s", CONFIG_WIFI_SSID);
   ESP_LOGI(TAG, "  WiFi Password: %s", CONFIG_WIFI_PASSWORD);
 
-  ESP_ERROR_CHECK(display_manager_init());
+  display_manager_init();
 
   // Small delay to ensure display is ready
   vTaskDelay(pdMS_TO_TICKS(100));
-  ESP_ERROR_CHECK(display_manager_clear());
-  ESP_ERROR_CHECK(display_manager_set_bg_color(0, 255, 255));
+  display_manager_clear();
+  display_manager_set_bg_color(0, 255, 255);
 
-  ESP_ERROR_CHECK(display_manager_write_text_color("init wifi...", 0, 0, 0));
-  ESP_ERROR_CHECK(wifi_manager_init());
-  ESP_ERROR_CHECK(
-      display_manager_write_text_color("  wifi connected", 0, 0, 0));
+  display_manager_write_text_color("init wifi...", 0, 0, 0);
+  esp_err_t err = wifi_manager_init();
+  if (err != ESP_OK) {
+    display_manager_set_bg_color(255, 0, 0);
+    display_manager_write_text_color("  failed to connect", 0, 0, 0);
+    vTaskDelay(portMAX_DELAY);
+  }
+  display_manager_write_text_color("  wifi connected", 0, 0, 0);
   vTaskDelay(pdMS_TO_TICKS(500));
 
-  ESP_ERROR_CHECK(display_manager_write_text_color("init complete", 0, 0, 0));
+  display_manager_write_text_color("init complete", 0, 0, 0);
   vTaskDelay(pdMS_TO_TICKS(500));
 
   display_manager_clear();
   display_manager_set_bg_color(0, 0, 0);
   display_manager_write_text("checking status...");
+  vTaskDelay(pdMS_TO_TICKS(1000));
 
   while (1) {
     // Generate status variables and check deployment status

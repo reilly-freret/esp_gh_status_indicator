@@ -1,5 +1,6 @@
 #include "display_manager.h"
 #include "config.h"
+#include "display/lv_display.h"
 #include "esp_err.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_types.h"
@@ -15,6 +16,24 @@ static const char *TAG = "display_manager";
 static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
 static lv_disp_t * disp_handle = NULL;
+static lv_obj_t * main_content_container = NULL;
+
+static void create_main_content_container(void) {
+    if (main_content_container) {
+        lv_obj_del(main_content_container);
+    }
+    
+    lv_obj_t *scr = lv_scr_act();
+    main_content_container = lv_obj_create(scr);
+    lv_obj_remove_style_all(main_content_container);
+    lv_obj_set_size(main_content_container, lv_disp_get_hor_res(disp_handle), lv_disp_get_ver_res(disp_handle));
+    lv_obj_set_pos(main_content_container, 0, 0);
+    
+    // Set up flex layout for main content
+    lv_obj_set_layout(main_content_container, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(main_content_container, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(main_content_container, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+}
 
 const lv_font_t *get_font(enum text_size size) {
     switch (size) {
@@ -104,6 +123,10 @@ esp_err_t display_manager_clear(void) {
     if (lvgl_port_lock(0)) {
         lv_obj_t *scr = lv_scr_act();
         lv_obj_clean(scr);
+        
+        // Recreate the main content container
+        create_main_content_container();
+        
         lvgl_port_unlock();
         return ESP_OK;
     }
@@ -112,14 +135,12 @@ esp_err_t display_manager_clear(void) {
 
 esp_err_t display_manager_write_text(const char *text) {
     if (lvgl_port_lock(0)) {
-        lv_obj_t *scr = lv_scr_act();
+        // Ensure main content container exists
+        if (!main_content_container) {
+            create_main_content_container();
+        }
         
-        // Set up flex layout if not already done
-        lv_obj_set_layout(scr, LV_LAYOUT_FLEX);
-        lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_COLUMN);
-        lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-        
-        lv_obj_t *label = lv_label_create(scr);
+        lv_obj_t *label = lv_label_create(main_content_container);
         lv_label_set_text(label, text);
         
         // Set text color to white
@@ -133,14 +154,12 @@ esp_err_t display_manager_write_text(const char *text) {
 
 esp_err_t display_manager_write_text_color(const char *text, int16_t r, int16_t g, int16_t b) {
     if (lvgl_port_lock(0)) {
-        lv_obj_t *scr = lv_scr_act();
+        // Ensure main content container exists
+        if (!main_content_container) {
+            create_main_content_container();
+        }
         
-        // Set up flex layout if not already done
-        lv_obj_set_layout(scr, LV_LAYOUT_FLEX);
-        lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_COLUMN);
-        lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-        
-        lv_obj_t *label = lv_label_create(scr);
+        lv_obj_t *label = lv_label_create(main_content_container);
         lv_label_set_text(label, text);
         
         // Set text color using provided RGB values
@@ -153,16 +172,45 @@ esp_err_t display_manager_write_text_color(const char *text, int16_t r, int16_t 
     return ESP_FAIL;
 }
 
-esp_err_t display_manager_write_text_custom(const char *text, text_config_t config) {
+esp_err_t display_manager_write_text_bottom(const char *text) {
     if (lvgl_port_lock(0)) {
         lv_obj_t *scr = lv_scr_act();
         
-        // Set up flex layout if not already done
-        lv_obj_set_layout(scr, LV_LAYOUT_FLEX);
-        lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_COLUMN);
-        lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+        // Get screen dimensions
+        lv_coord_t screen_width = lv_disp_get_hor_res(disp_handle);
+        lv_coord_t screen_height = lv_disp_get_ver_res(disp_handle);
         
-        lv_obj_t *label = lv_label_create(scr);
+        // Create a container for the bottom text that bypasses flex layout
+        lv_obj_t *bottom_container = lv_obj_create(scr);
+        lv_obj_remove_style_all(bottom_container);
+        lv_obj_set_size(bottom_container, screen_width, 30); // Fixed height for bottom text
+        
+        // Position container at the very bottom using absolute coordinates
+        lv_obj_set_pos(bottom_container, 0, screen_height - 30);
+        
+        // Create a label inside the container
+        lv_obj_t *label = lv_label_create(bottom_container);
+        lv_label_set_text(label, text);
+        lv_obj_set_width(label, screen_width);
+        lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+        
+        // Set text color to white
+        lv_obj_set_style_text_color(label, lv_color_white(), 0);
+        
+        lvgl_port_unlock();
+        return ESP_OK;
+    }
+    return ESP_FAIL;
+}
+
+esp_err_t display_manager_write_text_custom(const char *text, text_config_t config) {
+    if (lvgl_port_lock(0)) {
+        // Ensure main content container exists
+        if (!main_content_container) {
+            create_main_content_container();
+        }
+        
+        lv_obj_t *label = lv_label_create(main_content_container);
         lv_label_set_text(label, text);
         
         // Set text color using provided RGB values
@@ -252,7 +300,7 @@ esp_err_t display_manager_init(void)
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));
-    ESP_ERROR_CHECK(esp_lcd_panel_set_gap(panel_handle, 52, 40));
+    ESP_ERROR_CHECK(esp_lcd_panel_set_gap(panel_handle, X_OFFSET, Y_OFFSET));
 
     ESP_ERROR_CHECK(gpio_set_level(BOARD_TFT_BL, 1));
 
@@ -283,6 +331,9 @@ esp_err_t display_manager_init(void)
     };
 
     disp_handle = lvgl_port_add_disp(&disp_cfg);
+    #if CONFIG_MIKES_WAY
+    lv_disp_set_rotation(disp_handle, LV_DISPLAY_ROTATION_180);
+    #endif
 
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
 

@@ -3,6 +3,7 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_netif.h"
+#include "freertos/projdefs.h"
 #include "nvs_flash.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
@@ -68,8 +69,10 @@ esp_err_t wifi_manager_init(void) {
     
     ESP_LOGI(TAG, "WiFi init finished. Connecting to %s...", CONFIG_WIFI_SSID);
     
-    xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTED_BIT, false, true, portMAX_DELAY);
+    EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTED_BIT, false, true, pdMS_TO_TICKS(10 * 1000));
+    if ((bits & WIFI_CONNECTED_BIT) == 0)
+        return ESP_FAIL;
+
     ESP_LOGI(TAG, "Connected to WiFi");
-    
     return ESP_OK;
 }
