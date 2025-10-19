@@ -227,38 +227,6 @@ esp_err_t display_manager_write_text_custom(const char *text, text_config_t conf
     return ESP_FAIL;
 }
 
-esp_err_t display_manager_test(void) {
-    ESP_LOGI(TAG, "Test display");
-    if (lvgl_port_lock(0)) {
-        static lv_style_t style_scr;
-        lv_style_init(&style_scr);
-        lv_style_set_bg_color(&style_scr, lv_color_make(0, 0, 255));
-    
-        static lv_style_t style_label;
-        lv_style_init(&style_label);
-        lv_style_set_text_color(&style_label, lv_color_white());
-
-        lv_obj_t *scr = lv_scr_act();
-    
-        lv_obj_clean(scr);
-        lv_obj_set_size(scr, lv_disp_get_hor_res(disp_handle), lv_disp_get_ver_res(disp_handle));
-        lv_obj_add_style(scr, &style_scr, LV_STATE_DEFAULT);
-
-        lv_obj_set_layout(scr, LV_LAYOUT_FLEX);
-        lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_COLUMN);
-        lv_obj_set_style_flex_main_place(scr, LV_FLEX_ALIGN_SPACE_EVENLY, LV_STATE_DEFAULT);
-
-        lv_obj_t *label1 = lv_label_create(scr);
-        lv_label_set_text(label1, "Label");
-        lv_obj_center(label1);
-        lv_obj_set_width(label1, lv_pct(100));
-        lv_obj_add_style(label1, &style_label, LV_STATE_DEFAULT);
-
-        lvgl_port_unlock();
-    }
-    return ESP_OK;
-}
-
 esp_err_t display_manager_init(void)
 {
     ESP_LOGI(TAG, "Initialize display manager");
@@ -329,8 +297,8 @@ esp_err_t display_manager_init(void)
             .swap_bytes = true,
         }
     };
-
     disp_handle = lvgl_port_add_disp(&disp_cfg);
+
     #if CONFIG_MIKES_WAY
     lv_disp_set_rotation(disp_handle, LV_DISPLAY_ROTATION_180);
     #endif
