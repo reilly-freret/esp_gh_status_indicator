@@ -4,5 +4,5 @@ cmake_minimum_required(VERSION 3.16)
 
 set(COMPONENTS main)
 
-include(/Users/reillyfreret/documents/dev/esp/esp-idf/tools/cmake/project.cmake)
+include(/Users/reillyfreret/esp/esp-idf/tools/cmake/project.cmake)
 project(gh-status-indicator)

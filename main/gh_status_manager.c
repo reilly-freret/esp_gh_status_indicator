@@ -240,6 +240,7 @@ esp_err_t gh_check_deployment_status(const char *environment, char *status, size
     esp_err_t err = get_deployment_id(environment, deployment_id, sizeof(deployment_id));
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to get deployment ID: %s", esp_err_to_name(err));
+        snprintf(status, status_size, "unknown");
         return err;
     }
     
@@ -247,6 +248,7 @@ esp_err_t gh_check_deployment_status(const char *environment, char *status, size
     err = get_deployment_status(deployment_id, status, status_size);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to get deployment status: %s", esp_err_to_name(err));
+        snprintf(status, status_size, "unknown");
         return err;
     }
     

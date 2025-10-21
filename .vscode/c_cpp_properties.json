@@ -3,18 +3,7 @@
     {
       "name": "ESP-IDF",
       "compilerPath": "/Users/reillyfreret/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32-elf-gcc",
-      "compileCommands": "/Users/reillyfreret/Documents/dev/esp/gh-status-indicator/build/compile_commands.json"
-      // "includePath": [
-      //   "/Users/reillyfreret/Documents/dev/esp/esp-idf/components/**",
-      //   "/Users/reillyfreret/Documents/dev/esp/gh-status-indicator/**"
-      // ],
-      // "browse": {
-      //   "path": [
-      //     "/Users/reillyfreret/Documents/dev/esp/esp-idf/components",
-      //     "/Users/reillyfreret/Documents/dev/esp/gh-status-indicator"
-      //   ],
-      //   "limitSymbolsToIncludedHeaders": true
-      // }
+      "compileCommands": "/Users/reillyfreret/documents/gh-status-indicator/build/compile_commands.json"
     }
   ],
   "version": 4

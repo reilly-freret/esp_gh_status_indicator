@@ -26,7 +26,7 @@ void write_status_to_display(const char *environment, const char *status) {
     b = 0; // red
   } else if (strcmp(status, "pending") == 0 ||
              strcmp(status, "in_progress") == 0 ||
-             strcmp(status, "queued") == 0 || strcmp(status, "inactive") == 0) {
+             strcmp(status, "queued") == 0 || strcmp(status, "inactive") == 0 || strcmp(status, "unknown") == 0) {
     r = 128;
     g = 128;
     b = 128; // gray
@@ -108,7 +108,7 @@ void app_main(void) {
     char time_str[9];
     get_human_real_time(time_str);
     char last_checked_str[32];
-    snprintf(last_checked_str, sizeof(last_checked_str), "last checked: %s", time_str);
+    snprintf(last_checked_str, sizeof(last_checked_str), "UPDATED: %s", time_str);
     display_manager_write_text_bottom(last_checked_str);
 
     vTaskDelay(pdMS_TO_TICKS(CONFIG_STATUS_CHECK_INTERVAL * 1000));
