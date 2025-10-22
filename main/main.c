@@ -108,7 +108,7 @@ void app_main(void) {
     char time_str[9];
     get_human_real_time(time_str);
     char last_checked_str[32];
-    snprintf(last_checked_str, sizeof(last_checked_str), "UPDATED: %s", time_str);
+    snprintf(last_checked_str, sizeof(last_checked_str), "checked: %s", time_str);
     display_manager_write_text_bottom(last_checked_str);
 
     vTaskDelay(pdMS_TO_TICKS(CONFIG_STATUS_CHECK_INTERVAL * 1000));

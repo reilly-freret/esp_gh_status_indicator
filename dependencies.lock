@@ -1,6 +1,7 @@
 dependencies:
   espressif/esp_lvgl_port:
-    component_hash: bfb2778c063b05a6c47c1a8de6d166ee4d911bc86fe0b3ff9e6bab06d2812033
+    component_hash: 
+      bfb2778c063b05a6c47c1a8de6d166ee4d911bc86fe0b3ff9e6bab06d2812033
     dependencies:
     - name: idf
       require: private
@@ -18,7 +19,8 @@ dependencies:
       type: idf
     version: 5.5.1
   lvgl/lvgl:
-    component_hash: 17e68bfd21f0edf4c3ee838e2273da840bf3930e5dbc3bfa6c1190c3aed41f9f
+    component_hash: 
+      17e68bfd21f0edf4c3ee838e2273da840bf3930e5dbc3bfa6c1190c3aed41f9f
     dependencies: []
     source:
       registry_url: https://components.espressif.com
