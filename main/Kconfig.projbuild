@@ -1,5 +1,9 @@
 menu "GitHub Status Indicator Configuration"
 
+    config USE_VERCEL
+        bool "use vercel instead of github for deployment status"
+        default true
+
     config GITHUB_USERNAME
         string "GitHub Username"
         default "octocat"
@@ -15,6 +19,22 @@ menu "GitHub Status Indicator Configuration"
     config GITHUB_AUTH_TOKEN
         string "Github personal auth token"
         default "CHANGE_ME"
+
+    config VERCEL_AUTH_TOKEN
+        string "Vercel personal auth token"
+        default "CHANGE_ME"
+
+    config VERCEL_TEAM_ID
+        string "Vercel Team ID"
+        default "CHANGE_ME"
+        help
+            Vercel team ID for API requests
+
+    config VERCEL_PROJECT_ID
+        string "Vercel Project ID"
+        default "CHANGE_ME"
+        help
+            Vercel project ID for API requests
 
     config STATUS_CHECK_INTERVAL
         int "Status Check Interval (seconds)"
