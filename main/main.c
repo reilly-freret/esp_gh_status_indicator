@@ -107,7 +107,6 @@ void app_main(void) {
                              vercel_check_deployment_status(#env, env##_status, sizeof(env##_status));
       CHECK_ENV(production)
       CHECK_ENV(staging)
-      CHECK_ENV(preview)
       #undef CHECK_ENV
     #else
       // Use GitHub API
@@ -125,7 +124,6 @@ void app_main(void) {
     #ifdef CONFIG_USE_VERCEL
       write_status_to_display("production", production_status);
       write_status_to_display("staging", staging_status);
-      write_status_to_display("preview", preview_status);
     #else
       write_status_to_display("production", production_status);
       write_status_to_display("staging", staging_status);

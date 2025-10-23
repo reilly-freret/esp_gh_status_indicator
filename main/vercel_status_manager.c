@@ -11,11 +11,6 @@ static char vercel_response_buffer[MAX_VERCEL_RESPONSE_SIZE];
 
 // Helper function to get pre-built URL for environment
 static const char* get_vercel_deployments_url(const char* environment) {
-    // Special case for staging (maps to development in Vercel)
-    if (strcmp(environment, "staging") == 0) {
-        return vercel_staging_url.url;
-    }
-    
     for (int i = 0; vercel_environment_urls[i].name != NULL; i++) {
         if (strcmp(environment, vercel_environment_urls[i].name) == 0) {
             return vercel_environment_urls[i].url;
@@ -123,21 +118,11 @@ static esp_err_t parse_vercel_deployment_status(const char *json, char *status, 
         return ESP_ERR_INVALID_ARG;
     }
     
-    // Debug: Log the response for troubleshooting
-    ESP_LOGI(TAG, "Vercel API response: %s", json);
-    
-    // Check if response looks complete (ends with } or ])
-    size_t response_len = strlen(json);
-    if (response_len > 0 && json[response_len - 1] != '}' && json[response_len - 1] != ']') {
-        ESP_LOGW(TAG, "Response may be truncated - last char: %c", json[response_len - 1]);
-    }
-    
     // Vercel API returns: {"deployments": [...]}
-    // First, look for the "deployments" key
+    // Look for the "deployments" key
     const char *deployments_key = strstr(json, "\"deployments\"");
     if (!deployments_key) {
         ESP_LOGE(TAG, "No 'deployments' key found in Vercel response");
-        ESP_LOGE(TAG, "Response was: %s", json);
         return ESP_ERR_INVALID_RESPONSE;
     }
     
@@ -148,56 +133,48 @@ static esp_err_t parse_vercel_deployment_status(const char *json, char *status, 
         return ESP_ERR_INVALID_RESPONSE;
     }
     
-    // Check if array is empty
-    const char *array_end = strstr(array_start, "]");
-    if (!array_end) {
-        ESP_LOGE(TAG, "Malformed array in Vercel response - response may be truncated");
-        ESP_LOGE(TAG, "Array start: %s", array_start);
-        // Check if response looks truncated (no closing bracket)
-        if (strlen(array_start) > 100) {
-            ESP_LOGE(TAG, "Response appears to be truncated - buffer too small");
-        }
-        return ESP_ERR_INVALID_RESPONSE;
-    }
-    
     // Check if array is empty (just "[]")
-    if (array_end - array_start <= 2) {
-        ESP_LOGW(TAG, "Empty deployments array - no deployments found for this environment");
+    const char *array_end = strstr(array_start, "]");
+    if (!array_end || array_end - array_start <= 2) {
+        ESP_LOGW(TAG, "No deployments found for this environment");
         strncpy(status, "NO DEPLOYMENTS", status_size - 1);
         status[status_size - 1] = '\0';
         return ESP_OK;
     }
     
-    // Find the first object in the array
+    // Get the first (and only) deployment object
     const char *object_start = strstr(array_start, "{");
     if (!object_start) {
-        ESP_LOGE(TAG, "No deployment object found in Vercel response");
+        ESP_LOGE(TAG, "No deployment object found in response");
         return ESP_ERR_INVALID_RESPONSE;
     }
     
-    // Parse the state field from the first deployment object
-    esp_err_t err = parse_vercel_json_field(object_start, "state", status, status_size);
+    char raw_status[32];
+    esp_err_t err = parse_vercel_json_field(object_start, "state", raw_status, sizeof(raw_status));
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to parse deployment state from Vercel response");
+        ESP_LOGE(TAG, "Failed to parse deployment state");
         return err;
     }
     
     // Map Vercel states to display-friendly strings
-    if (strcmp(status, "READY") == 0) {
+    if (strcmp(raw_status, "READY") == 0) {
         strncpy(status, "SUCCESS", status_size - 1);
         status[status_size - 1] = '\0';
-    } else if (strcmp(status, "BUILDING") == 0) {
+    } else if (strcmp(raw_status, "BUILDING") == 0) {
         strncpy(status, "IN PROGRESS", status_size - 1);
         status[status_size - 1] = '\0';
-    } else if (strcmp(status, "ERROR") == 0) {
+    } else if (strcmp(raw_status, "ERROR") == 0) {
         strncpy(status, "FAILURE", status_size - 1);
         status[status_size - 1] = '\0';
-    } else if (strcmp(status, "CANCELED") == 0) {
+    } else if (strcmp(raw_status, "CANCELED") == 0) {
         strncpy(status, "CANCELED", status_size - 1);
         status[status_size - 1] = '\0';
+    } else {
+        strncpy(status, raw_status, status_size - 1);
+        status[status_size - 1] = '\0';
     }
-    // For any other states, keep the original value
     
+    ESP_LOGI(TAG, "Found deployment with state: %s -> %s", raw_status, status);
     return ESP_OK;
 }
 
